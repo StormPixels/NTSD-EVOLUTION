@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+
+<head>
+<meta http-equiv='content-type' content='text/html; charset=UTF-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>NTSD EVOLUTION</title>
+
+</head>
+
+<body>
+<div class='LFroot'>
+	<div class='container'>
+	<div class='window_caption'>
+			<div class='window_caption_title'>
+				NTSD
+			</div>
+			<div class='window_caption_button_bar'>
+				<div class='maximize_button'><span class='unisym'>&#9723;</span></div>
+				<!--<div class='settingsButton'><span class='unisym'>&#9000;</span></div>-->
+
+			</div>
+		</div>
+		<div class='window'>
+			<div class='frontpage'>
+				
+		
+				<div class='frontpage_text' style='left:0;bottom:0;'>
+					Alpha 0.0.1<br>
+					
+				</div>
+
+				<div class='frontpage_content'>
+				</div>
+			</div>
+			<div class='settings'>
+			</div>
+			<div class='network_game'>
+				<div class='network_game_menu'>
+					<select class='server_select'>
+					</select>
+					<button class='server_connect'>Connect</button>
+					<button class='network_game_cancel'>Cancel</button>
+					<input class='server_address' type='url' value=''>
+					<textarea class='network_log' readonly></textarea>
+				</div>
+			</div>
+			<div class='gameplay'>
+				<canvas class='canvas' width='0' height='0'></canvas>
+				<div class='top_status'></div>
+				<div class='bottom_status'>
+					<input class='fps' value='0fps'></input>
+					<span class='footnote'></span>
+				</div>
+				<div class='dialog_holder'>
+					<div class='pause_message'></div>
+					<div class='summary_dialog'></div>
+				</div>
+			</div>
+			<div class='character_selection'>
+			</div>
+		</div>
+		<pre class='projectFmessage'>
+                 ______        
+                / ____/        
+             __/_/___          
+           / _/_____/          
+           \ / /               
+            `-/                
+                               
+           Project F           
+		</pre>
+	</div>
+	<div class='extra_UI container'>
+		<div class='dialog_holder'>
+			<div class='alert_box' style='display:none;'>
+				<span class='alert_message'>Loading...</span>
+				<button class='alert_box_ok'>OK</button>
+			</div>
+		</div>
+	</div>
+	<div class='touch_control_holder'></div>
+	<div class='lobby'>
+		<div class='header'>
+			<div class='nav'>
+				<a>&nbsp;&nbsp;&nbsp;F.LF Lobby&nbsp;&nbsp;&nbsp;</a>
+				<a href='http://project-f.github.io/F.LF/docs/multiplayer.html' target='_blank' class='help_button'>&nbsp;?&nbsp;</a>
+				<a class='close_button'>&nbsp;X&nbsp;</a>
+			</div>
+		</div>
+		<iframe class='lobby_window'></iframe>
+	</div>
+
+</div>
+<pre id='flf-config' style='display:none'>
+{"root":"../","package":"../Package"}
+</pre>
+
+<script data-main="game.js" src="../third_party/require.js"></script>
+
+<!-- BGM: headless, dikontrol dari manager.js via window.BGM -->
+<audio id="bgm-audio"></audio> dari sini 
+<script>
+(function () {
+  const BGM_LIST = [
+    "stage1.wma",  "stage2.wma", "stage3.wma", "stage4.wma", "boss1.wma", "boss2.wma",
+  ];
+
+  const BASE = '../bgm/';
+  const audio = document.getElementById('bgm-audio');
+  audio.loop = true;
+  audio.volume = 0.5;
+
+  // Shuffle sekali saat load
+  for (let i = BGM_LIST.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    var t = BGM_LIST[i]; BGM_LIST[i] = BGM_LIST[j]; BGM_LIST[j] = t;
+  }
+
+  let idx = 0;
+  let enabled = true;
+
+  function playAt(i) {
+    idx = ((i % BGM_LIST.length) + BGM_LIST.length) % BGM_LIST.length;
+    audio.src = BASE + BGM_LIST[idx];
+    if (enabled) audio.play().catch(function(){});
+  }
+
+  audio.addEventListener('ended', function () { if (enabled) playAt(idx + 1); });
+
+  // Auto-play; fallback ke interaksi pertama jika browser block
+  playAt(0);
+  document.addEventListener('click', function tryPlay() {
+    if (enabled && audio.paused) audio.play().catch(function(){});
+    document.removeEventListener('click', tryPlay);
+  }, { once: true });
+
+  function label(filename) {
+    return filename.replace(/\.wma$/i, '').replace(/[_-]/g, ' ')
+  }
+
+  // API publik untuk manager.js
+  window.BGM = {
+    next: function () { playAt(idx + 1); return '♪ ' + label(BGM_LIST[idx]); },
+    prev: function () { playAt(idx - 1); return '♪ ' + label(BGM_LIST[idx]); },
+    toggle: function () {
+      enabled = !enabled;
+      if (enabled) { audio.play().catch(function(){}); }
+      else { audio.pause(); }
+      return enabled ? ('♪ ' + label(BGM_LIST[idx])) : '✕ BGM OFF';
+    },
+    isEnabled: function () { return enabled; }
+  };
+})();
+</script>
+
+
+<!--<script src="debug.js"></script>-->
+<!--<script src="console.js"></script>-->
+<script>
+// Sembunyikan define.amd sementara supaya eruda.js
+// tidak mendaftar sebagai AMD module milik require.js
+window.__define_amd_backup = window.define;
+window.define = undefined;
+</script>
+<!--<script src="eruda.js"></script>-->
+<script>
+window.define = window.__define_amd_backup;
+delete window.__define_amd_backup;
+
+
+eruda.init();
+
+</script>
+</body>

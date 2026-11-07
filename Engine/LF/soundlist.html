@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Sound Auto Generator</title></head>
+<body>
+<h3>Buat soundpack otomatis dari daftar file</h3>
+<input type="file" id="files" multiple accept=".wav"><br><br>
+<pre id="output" style="background:#111;color:#0f0;padding:10px;"></pre>
+
+<script>
+document.getElementById('files').addEventListener('change', e => {
+  const files = Array.from(e.target.files).sort((a,b)=>a.name.localeCompare(b.name));
+  let result = ' ';
+  for (let f of files) {
+    const base = f.name.replace(/\.[^/.]+$/, ".wav"); // hapus .wav
+    result += `    "${f.name}",\n`;
+  }
+  document.getElementById('output').textContent = result;
+});
+</script>
+</body>
+</html>

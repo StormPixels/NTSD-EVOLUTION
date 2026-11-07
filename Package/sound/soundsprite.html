@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<head></head>
+<body>
+sound sprite test (multi-file supported).<br>
+select an item from drop down menu to play.
+<script>
+var soundpack;
+function define(data) {
+  soundpack = data;
+}
+</script>
+<script src='soundpack.js'></script>
+<select id='select'></select>
+<button id='play'>play</button>
+
+<script>
+var so = new soundsprite(soundpack);
+for (var I in soundpack.sound) {
+  var item = document.createElement('option');
+  item.value = I;
+  item.innerHTML = I;
+  $('select').appendChild(item);
+}
+$('play').onclick = $('select').onchange = function() {
+  so.play($('select').value);
+}
+
+function $(e) { return document.getElementById(e); }
+
+// =====================================================
+// 🔊 soundsprite: versi baru (bisa multi-file per suara)
+// =====================================================
+function soundsprite(data) {
+  var types = {
+    'mp3': 'audio/mpeg',
+    'ogg': 'audio/ogg',
+    'wav': 'audio/wav',
+    'aac': 'audio/aac',
+    'm4a': 'audio/x-m4a'
+  };
+  var This = this;
+  var doc = document;
+  this.data = data;
+  var audio = this.audio = doc.createElement('audio');
+  audio.preload = 'auto';
+
+  // baseurl hanya dipakai kalau file utama masih ada
+  var baseurl = '../';
+  if (data.file) {
+    for (var i = 0; i < data.ext.length; i++) {
+      var source = doc.createElement('source');
+      source.src = baseurl + data.file + '.' + data.ext[i];
+      if (types[data.ext[i]]) source.type = types[data.ext[i]];
+      audio.appendChild(source);
+    }
+  }
+
+  audio.addEventListener('timeupdate', function() {
+    This.timeupdate();
+  }, true);
+
+  this.frame = data.sound;
+}
+
+soundsprite.prototype.play = function(id) {
+  if (!id || !this.frame[id]) return;
+
+  var entry = this.frame[id];
+  this.current = entry;
+
+  // 🔹 Jika entri punya file sendiri, mainkan file itu langsung
+  if (entry.file) {
+    this.audio.pause();
+    this.audio.src = entry.file;
+    this.audio.currentTime = 0;
+    this.audio.play();
+    return;
+  }
+
+  // 🔹 Kalau masih pakai sistem lama (start/end)
+  if (entry.start != null && entry.end != null) {
+    this.audio.currentTime = entry.start;
+    this.audio.play();
+  }
+};
+
+soundsprite.prototype.timeupdate = function() {
+  if (this.current && this.current.start != null && this.current.end != null) {
+    if (
+      this.audio.currentTime < this.current.start ||
+      this.audio.currentTime > this.current.end
+    ) {
+      this.audio.pause();
+    }
+  }
+};
+</script>
+</body>
+</html>
